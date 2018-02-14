@@ -114,7 +114,38 @@ namespace CucaBot.Dialogs
         [LuisIntent("Recognize image")]
         public async Task RecognizeImage(IDialogContext context, LuisResult result)
         {
-            await ShowLuisResult(context, result);
+            await context.PostAsync("Digite a url da imagem..");
+            context.Wait(ProcessImage);
+        }
+
+        public async Task ProcessImage(IDialogContext context, IAwaitable<IMessageActivity> argument)
+        {
+            var activity = await argument;
+
+            var uri = activity.Attachments?.Any() == true ?
+                new Uri(activity.Attachments[0].ContentUrl) :
+                new Uri(activity.Text);
+
+            var analisyResult = await new VisionService().Analyse(uri);
+
+            var mostProbablePrediction = analisyResult.Predictions?
+                                    .OrderByDescending(c => c.Probability)
+                                    .FirstOrDefault();
+
+            switch (mostProbablePrediction?.Tag)
+            {
+                case "cuca":
+                    await context.PostAsync($"Isso é uma cuca {EmojiType.Yum}");
+                    break;
+                case "pao":
+                    await context.PostAsync($"Isso é apenas um pão {EmojiType.Worried}");
+                    break;
+                default:
+                    await context.PostAsync($"Não sei dizer o que é isso {EmojiType.LoudlyCrying}");
+                    break;
+            }
+
+            context.Wait(MessageReceived);
         }
 
         [LuisIntent("None")]

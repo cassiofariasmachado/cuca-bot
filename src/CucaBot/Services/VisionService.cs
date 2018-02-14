@@ -22,13 +22,13 @@ namespace CucaBot.Services
             _customVisionUri = ConfigurationManager.AppSettings["CustomVisionUri"];
         }
 
-        public async Task<CustomVisionModel> Analyse(string url)
+        public async Task<CustomVisionModel> Analyse(Uri uri)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, _customVisionUri);
+            var request = new HttpRequestMessage(HttpMethod.Post, _customVisionUri);
 
             request.Headers.Add("Prediction-key", _customVisionApiKey);
 
-            return await _httpService.Send<CustomVisionModel>(request, new { Url = url });
+            return await _httpService.Send<CustomVisionModel>(request, new { Url = uri });
         }
     }
 }
