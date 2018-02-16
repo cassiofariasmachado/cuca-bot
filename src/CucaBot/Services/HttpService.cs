@@ -57,6 +57,11 @@ namespace CucaBot.Services
                 request.Content = new StringContent(json, Encoding.UTF8, "application/json");
             }
 
+            return await Send<T>(request);
+        }
+
+        public async Task<T> Send<T>(HttpRequestMessage request)
+        {
             var response = await _httpClient.SendAsync(request);
 
             var content = await response.Content.ReadAsStringAsync();
