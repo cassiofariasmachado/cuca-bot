@@ -18,6 +18,8 @@ namespace CucaBot.Dialogs
     [Serializable]
     public class RootDialog : LuisDialog<object>
     {
+        private const double IntentThreshold = 0.8;
+
         private static readonly string _luisAppId = ConfigurationManager.AppSettings["LuisAppId"];
 
         private static readonly string _luisApiKey = ConfigurationManager.AppSettings["LuisAPIKey"];
@@ -179,10 +181,34 @@ namespace CucaBot.Dialogs
             context.Wait(MessageReceived);
         }
 
+        [LuisIntent("Bye")]
+        public async Task Bye(IDialogContext context, LuisResult result)
+        {
+            var byeIndex = new Random().Next() % CucaBotConfig.Bye.Length;
+            await context.PostAsync($"{CucaBotConfig.Bye[byeIndex]}, espero ter te ajudado {EmojiType.Wink}");
+            context.Wait(MessageReceived);
+        }
+
         [LuisIntent("None")]
         public async Task None(IDialogContext context, LuisResult result)
         {
-            await this.ShowLuisResult(context, result);
+            await context.Forward(new QnADialog(), AfterQnAResponse, context.Activity, CancellationToken.None);
+        }
+
+        // Workarount for issue: https://github.com/Microsoft/BotBuilder-CognitiveServices/issues/57
+        private async Task AfterQnAResponse(IDialogContext context, IAwaitable<object> result)
+        {
+            context.Wait(MessageReceived);
+        }
+
+        protected override Task DispatchToIntentHandler(IDialogContext context, IAwaitable<IMessageActivity> item, IntentRecommendation bestIntent, LuisResult result)
+        {
+            if (result.TopScoringIntent.Score.HasValue && result.TopScoringIntent.Score.Value < IntentThreshold)
+            {
+                return None(context, result);
+            }
+
+            return base.DispatchToIntentHandler(context, item, bestIntent, result);
         }
 
         private async Task ShowLuisResult(IDialogContext context, LuisResult result)
