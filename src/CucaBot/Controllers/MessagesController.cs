@@ -1,4 +1,5 @@
 ﻿using CucaBot.Dialogs;
+using CucaBot.Utils;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using System;
@@ -47,12 +48,11 @@ namespace CucaBot
                     {
                         var reply = message.CreateReply();
 
-                        reply.Text = "Olá, sou o **CucaBot**, posso lhe ajudar com as seguintes tarefas: \n" +
-                                     "* Agendar um novo \"dia da cuca\" \n" +
-                                     "* Listar as próximas cucas \n" +
-                                     "* Salvar quem irá participar \n" +
-                                     "* Identificar se uma imagem é de uma cuca ou não \n" +
-                                     "* Tirar algumas dúvidas sobre o \"dia da cuca\" \n";
+                        int greetingIndex = new Random().Next() % CucaBotConfig.Greetings.Length;
+
+                        reply.Text = $"{CucaBotConfig.Greetings[greetingIndex]}, sou o **CucaBot**, " +
+                                     $"posso lhe ajudar com as seguintes tarefas: \n " +
+                                     $"{CucaBotConfig.Tasks}";
 
                         await connector.Conversations.ReplyToActivityAsync(reply);
                     }

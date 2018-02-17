@@ -141,6 +141,7 @@
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\VisionService.cs" />
+    <Compile Include="Utils\CucaBotConfig.cs" />
     <Compile Include="Utils\EmojiType.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -172,6 +172,13 @@ namespace CucaBot.Dialogs
             context.Wait(MessageReceived);
         }
 
+        [LuisIntent("Consciousness")]
+        public async Task Consciousness(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync($"Sou o **CucaBot** e posso fazer as seguintes tarefas: \n {CucaBotConfig.Tasks}");
+            context.Wait(MessageReceived);
+        }
+
         [LuisIntent("None")]
         public async Task None(IDialogContext context, LuisResult result)
         {
