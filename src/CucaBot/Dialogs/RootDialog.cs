@@ -65,7 +65,7 @@ namespace CucaBot.Dialogs
         {
             var cucas = await _cucaService.ListNext();
 
-            Activity replyToConversation = ((Activity)context.Activity).CreateReply($"Os próximos \"dia da cuca\" são... {EmojiType.Yum}");
+            Activity replyToConversation = ((Activity)context.Activity).CreateReply($"Os próximos \"dia da cuca\" são... {EmojiType.Smiley}");
 
             replyToConversation.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             replyToConversation.Attachments = new List<Attachment>();
@@ -135,13 +135,13 @@ namespace CucaBot.Dialogs
             switch (mostProbablePrediction?.Tag)
             {
                 case "cuca":
-                    await context.PostAsync($"Isso é uma cuca {EmojiType.Yum}");
+                    await context.PostAsync($"Isso é uma cuca {EmojiType.Smiley}");
                     break;
                 case "pao":
-                    await context.PostAsync($"Isso é apenas um pão {EmojiType.Worried}");
+                    await context.PostAsync($"Isso é apenas um pão {EmojiType.Speechless}");
                     break;
                 default:
-                    await context.PostAsync($"Não sei dizer o que é isso {EmojiType.LoudlyCrying}");
+                    await context.PostAsync($"Não sei dizer o que é isso {EmojiType.Sad}");
                     break;
             }
 

@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using CucaBot.Models;
+﻿using CucaBot.Models;
 using CucaBot.Services;
 using CucaBot.Utils;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Connector;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace CucaBot.Dialogs
 {
@@ -67,7 +66,7 @@ namespace CucaBot.Dialogs
             if (!DateTime.TryParse(currentDate, out DateTime date))
             {
 
-                PromptDialog.Text(context, PromptDate, $"Puts, data inválida digite novamente (no formato dd/mm/yyyy) {EmojiType.Worried}");
+                PromptDialog.Text(context, PromptDate, $"Puts, data inválida digite novamente (no formato dd/mm/yyyy) {EmojiType.Speechless}");
             }
             else
             {
