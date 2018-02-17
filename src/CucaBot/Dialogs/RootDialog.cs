@@ -165,6 +165,13 @@ namespace CucaBot.Dialogs
             context.Wait(MessageReceived);
         }
 
+        [LuisIntent("Thanks")]
+        public async Task Thanks(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync($"De nada, estou aqui para ajudar {EmojiType.Wink}");
+            context.Wait(MessageReceived);
+        }
+
         [LuisIntent("None")]
         public async Task None(IDialogContext context, LuisResult result)
         {
