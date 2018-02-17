@@ -148,6 +148,23 @@ namespace CucaBot.Dialogs
             context.Wait(MessageReceived);
         }
 
+        [LuisIntent("Greeting")]
+        public async Task Greeting(IDialogContext context, LuisResult result)
+        {
+            var greeting = string.Empty;
+            var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time")).TimeOfDay;
+
+            if (now < TimeSpan.FromHours(12))
+                greeting = "Bom dia";
+            else if (now < TimeSpan.FromHours(18))
+                greeting = "Boa tarde";
+            else greeting = "Boa noite";
+
+            await context.PostAsync($"{greeting}, como posso te ajudar?");
+            context.Wait(MessageReceived);
+        }
+
         [LuisIntent("None")]
         public async Task None(IDialogContext context, LuisResult result)
         {
