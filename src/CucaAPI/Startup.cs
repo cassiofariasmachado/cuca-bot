@@ -22,7 +22,7 @@ namespace CucaAPI
             services.AddCors();
             services.AddDbContext<CucaContext>(opts =>
             {
-                opts.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                opts.UseInMemoryDatabase("CucaDB");
             });
         }
 
