@@ -4,12 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CucaAPI.Controllers
 {
-    [Produces("application/json")]
     [Route("api/Cucas")]
+    [Produces("application/json")]
     public class CucasController : Controller
     {
         private readonly CucaContext _context;
@@ -23,7 +24,7 @@ namespace CucaAPI.Controllers
         [HttpGet]
         public IEnumerable<Cuca> GetCuca()
         {
-            return _context.Cuca;
+            return _context.Cucas;
         }
 
         // GET: api/Cucas/next
@@ -31,7 +32,7 @@ namespace CucaAPI.Controllers
         [Route("next")]
         public IEnumerable<Cuca> GetCuca([FromQuery]int limit = 20, [FromQuery]int skip = 0)
         {
-            return _context.Cuca
+            return _context.Cucas
                 .OrderBy(c => c.Date)
                 .Where(c => c.Date >= DateTime.UtcNow)
                 .Include(c => c.Participants)
@@ -41,59 +42,52 @@ namespace CucaAPI.Controllers
 
         // GET: api/Cucas/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetCuca([FromRoute] int id)
+        public async Task<IActionResult> GetCuca([FromRoute] int id, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            var cuca = await _context.Cuca.Include(c => c.Participants)
-                .SingleOrDefaultAsync(m => m.Id == id);
+            var cuca = await _context.Cucas.Include(c => c.Participants)
+                .SingleOrDefaultAsync(m => m.Id == id, cancellationToken);
 
             if (cuca == null)
-            {
                 return NotFound();
-            }
 
             return Ok(cuca);
         }
 
         // PUT: api/Cucas/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCuca([FromRoute] int id, [FromBody] Cuca cuca)
+        public async Task<IActionResult> PutCuca(
+            [FromRoute] int id,
+            [FromBody] Cuca cuca,
+            CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             if (id != cuca.Id)
-            {
                 return BadRequest();
-            }
 
             _context.Entry(cuca).State = EntityState.Modified;
 
             foreach (var participant in cuca.Participants)
             {
-                _context.Entry(participant).State = UserExists(participant.Id) ? EntityState.Modified : EntityState.Added;
+                bool userExists = await UserExists(participant.Id, cancellationToken);
+                _context.Entry(participant).State = userExists ? EntityState.Modified : EntityState.Added;
             }
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CucaExists(id))
-                {
+                bool cucaExists = await CucaExists(id, cancellationToken);
+                if (!cucaExists)
                     return NotFound();
-                }
                 else
-                {
                     throw;
-                }
             }
 
             return NoContent();
@@ -101,19 +95,18 @@ namespace CucaAPI.Controllers
 
         // PUT: api/Cucas/5/join
         [HttpPut("{id}/join")]
-        public async Task<IActionResult> PutCuca([FromRoute] int id, [FromBody] User user)
+        public async Task<IActionResult> PutCuca(
+            [FromRoute] int id,
+            [FromBody] User user,
+            CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            var cuca = _context.Cuca.Find(id);
+            var cuca = await _context.Cucas.FindAsync(id, cancellationToken);
 
             if (cuca == null)
-            {
                 return NotFound();
-            }
 
             cuca.Participants.Add(user);
 
@@ -121,23 +114,21 @@ namespace CucaAPI.Controllers
 
             foreach (var participant in cuca.Participants)
             {
-                _context.Entry(participant).State = UserExists(participant.Id) ? EntityState.Modified : EntityState.Added;
+                bool userExists = await UserExists(participant.Id, cancellationToken);
+                _context.Entry(participant).State = userExists ? EntityState.Modified : EntityState.Added;
             }
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CucaExists(id))
-                {
+                bool cucaExists = await CucaExists(id, cancellationToken);
+                if (!cucaExists)
                     return NotFound();
-                }
                 else
-                {
                     throw;
-                }
             }
 
             return NoContent();
@@ -145,54 +136,50 @@ namespace CucaAPI.Controllers
 
         // POST: api/Cucas
         [HttpPost]
-        public async Task<IActionResult> PostCuca([FromBody] Cuca cuca)
+        public async Task<IActionResult> PostCuca([FromBody] Cuca cuca, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             _context.Entry(cuca).State = EntityState.Added;
 
             foreach (var participant in cuca.Participants)
             {
-                _context.Entry(participant).State = UserExists(participant.Id) ? EntityState.Modified : EntityState.Added;
+                bool userExists = await UserExists(participant.Id, cancellationToken);
+                _context.Entry(participant).State = userExists ? EntityState.Modified : EntityState.Added;
             }
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             return CreatedAtAction("GetCuca", new { id = cuca.Id }, cuca);
         }
 
         // DELETE: api/Cucas/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCuca([FromRoute] int id)
+        public async Task<IActionResult> DeleteCuca([FromRoute] int id, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            var cuca = await _context.Cuca.SingleOrDefaultAsync(m => m.Id == id);
+            var cuca = await _context.Cucas.SingleOrDefaultAsync(m => m.Id == id, cancellationToken);
+
             if (cuca == null)
-            {
                 return NotFound();
-            }
 
-            _context.Cuca.Remove(cuca);
-            await _context.SaveChangesAsync();
+            _context.Cucas.Remove(cuca);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return Ok(cuca);
         }
 
-        private bool UserExists(string id)
+        private async Task<bool> UserExists(string id, CancellationToken cancellationToken)
         {
-            return _context.User.Any(u => u.Id == id);
+            return await _context.Users.AnyAsync(u => u.Id == id, cancellationToken);
         }
 
-        private bool CucaExists(int id)
+        private async Task<bool> CucaExists(int id, CancellationToken cancellationToken)
         {
-            return _context.Cuca.Any(e => e.Id == id);
+            return await _context.Cucas.AnyAsync(e => e.Id == id, cancellationToken);
         }
     }
 }

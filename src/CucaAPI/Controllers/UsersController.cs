@@ -7,11 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CucaAPI;
 using CucaAPI.Entities;
+using System.Threading;
 
 namespace CucaAPI.Controllers
 {
-    [Produces("application/json")]
     [Route("api/Users")]
+    [Produces("application/json")]
     public class UsersController : Controller
     {
         private readonly CucaContext _context;
@@ -25,58 +26,50 @@ namespace CucaAPI.Controllers
         [HttpGet]
         public IEnumerable<User> GetUser()
         {
-            return _context.User;
+            return _context.Users;
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser([FromRoute] string id)
+        public async Task<IActionResult> GetUser([FromRoute] string id, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            var user = await _context.User.SingleOrDefaultAsync(m => m.Id == id);
+            var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == id, cancellationToken);
 
             if (user == null)
-            {
                 return NotFound();
-            }
 
             return Ok(user);
         }
 
         // PUT: api/Users/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser([FromRoute] string id, [FromBody] User user)
+        public async Task<IActionResult> PutUser(
+            [FromRoute] string id,
+            [FromBody] User user,
+            CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             if (id != user.Id)
-            {
                 return BadRequest();
-            }
 
             _context.Entry(user).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserExists(id))
-                {
+                bool userExists = await UserExists(id, cancellationToken);
+                if (!userExists)
                     return NotFound();
-                }
                 else
-                {
                     throw;
-                }
             }
 
             return NoContent();
@@ -84,43 +77,37 @@ namespace CucaAPI.Controllers
 
         // POST: api/Users
         [HttpPost]
-        public async Task<IActionResult> PostUser([FromBody] User user)
+        public async Task<IActionResult> PostUser([FromBody] User user, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            _context.User.Add(user);
-            await _context.SaveChangesAsync();
+            await _context.Users.AddAsync(user, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return CreatedAtAction("GetUser", new { id = user.Id }, user);
         }
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser([FromRoute] string id)
+        public async Task<IActionResult> DeleteUser([FromRoute] string id, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            var user = await _context.User.SingleOrDefaultAsync(m => m.Id == id);
+            var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == id, cancellationToken);
             if (user == null)
-            {
                 return NotFound();
-            }
 
-            _context.User.Remove(user);
-            await _context.SaveChangesAsync();
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return Ok(user);
         }
 
-        private bool UserExists(string id)
+        private async Task<bool> UserExists(string id, CancellationToken cancellationToken)
         {
-            return _context.User.Any(e => e.Id == id);
+            return await _context.Users.AnyAsync(e => e.Id == id, cancellationToken);
         }
     }
 }
