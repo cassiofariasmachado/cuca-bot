@@ -103,7 +103,7 @@ namespace CucaAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var cuca = await _context.Cucas.FindAsync(id, cancellationToken);
+            var cuca = await _context.Cucas.SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
 
             if (cuca == null)
                 return NotFound();
