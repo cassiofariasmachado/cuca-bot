@@ -20,6 +20,8 @@ namespace CucaBot
         /// </summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
+            activity.Locale = activity.Locale ?? "pt-BR";
+
             if (activity.Type == ActivityTypes.Message)
             {
                 await Conversation.SendAsync(activity, () => new RootDialog());

@@ -2,6 +2,7 @@
 using CucaBot.Services;
 using CucaBot.Utils;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Connector;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -48,8 +49,9 @@ namespace CucaBot.Dialogs
         private async Task PromptValue(IDialogContext context, IAwaitable<string> result)
         {
             var currentValue = await result;
+            var activity = (Activity)context.Activity;
 
-            if (!decimal.TryParse(currentValue, NumberStyles.Currency, CultureInfo.CurrentUICulture, out decimal value))
+            if (!decimal.TryParse(currentValue, NumberStyles.Currency, new CultureInfo(activity.Locale), out decimal value))
             {
                 PromptDialog.Text(context, PromptValue, $"Ops, valor inválido digite novamente {EmojiType.Cry}");
             }
@@ -63,8 +65,9 @@ namespace CucaBot.Dialogs
         private async Task PromptDate(IDialogContext context, IAwaitable<string> result)
         {
             var currentDate = await result;
+            var activity = (Activity)context.Activity;
 
-            if (!DateTime.TryParse(currentDate, CultureInfo.CurrentUICulture, DateTimeStyles.AdjustToUniversal, out DateTime date))
+            if (!DateTime.TryParse(currentDate, new CultureInfo(activity.Locale), DateTimeStyles.AdjustToUniversal, out DateTime date))
             {
                 PromptDialog.Text(context, PromptDate, $"Puts, data inválida digite novamente (no formato dd/mm/yyyy) {EmojiType.Speechless}");
             }
