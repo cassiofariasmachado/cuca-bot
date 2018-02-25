@@ -65,7 +65,6 @@ namespace CucaBot.Dialogs
 
             if (!DateTime.TryParse(currentDate, out DateTime date))
             {
-
                 PromptDialog.Text(context, PromptDate, $"Puts, data inválida digite novamente (no formato dd/mm/yyyy) {EmojiType.Speechless}");
             }
             else
@@ -85,9 +84,10 @@ namespace CucaBot.Dialogs
                 var cucaCreated = await _cucaService.Create(cuca);
                 context.Done(cucaCreated);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 await context.PostAsync($"Ocorreu um erro tente mais tarde {EmojiType.Cry}");
+                context.Fail(e);
             }
         }
     }

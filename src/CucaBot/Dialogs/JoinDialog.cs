@@ -2,14 +2,13 @@
 using CucaBot.Services;
 using CucaBot.Utils;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Connector;
 using System;
 using System.Threading.Tasks;
 
 namespace CucaBot.Dialogs
 {
     [Serializable]
-    public class JoinDialog : IDialog<IMessageActivity>
+    public class JoinDialog : IDialog<object>
     {
         private readonly CucaService _cucaService;
 
@@ -73,14 +72,15 @@ namespace CucaBot.Dialogs
                 {
                     message = errorMessage;
                 }
-            }
-            catch (Exception)
-            {
-                message = errorMessage;
-            }
 
-            await context.PostAsync(message);
-            context.Done<object>(null);
+                await context.PostAsync(message);
+                context.Done<object>(null);
+            }
+            catch (Exception e)
+            {
+                await context.PostAsync(errorMessage);
+                context.Fail(e);
+            }
         }
     }
 }

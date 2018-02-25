@@ -110,7 +110,13 @@ namespace CucaBot.Dialogs
                 idCuca = Convert.ToInt32(value.Entity);
             }
 
-            await context.Forward(new JoinDialog(idCuca), MessageReceived, context.Activity, CancellationToken.None);
+            await context.Forward(new JoinDialog(idCuca), AfterJoin, context.Activity, default(CancellationToken));
+        }
+
+        // To-do: make it better
+        private async Task AfterJoin(IDialogContext context, IAwaitable<object> result)
+        {
+            context.Wait(MessageReceived);
         }
 
         [LuisIntent("Recognize image")]
