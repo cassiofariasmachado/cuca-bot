@@ -4,6 +4,7 @@ using CucaBot.Utils;
 using Microsoft.Bot.Builder.Dialogs;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -48,7 +49,7 @@ namespace CucaBot.Dialogs
         {
             var currentValue = await result;
 
-            if (!decimal.TryParse(currentValue, out decimal value))
+            if (!decimal.TryParse(currentValue, NumberStyles.Currency, CultureInfo.CurrentUICulture, out decimal value))
             {
                 PromptDialog.Text(context, PromptValue, $"Ops, valor inválido digite novamente {EmojiType.Cry}");
             }
@@ -63,7 +64,7 @@ namespace CucaBot.Dialogs
         {
             var currentDate = await result;
 
-            if (!DateTime.TryParse(currentDate, out DateTime date))
+            if (!DateTime.TryParse(currentDate, CultureInfo.CurrentUICulture, DateTimeStyles.AdjustToUniversal, out DateTime date))
             {
                 PromptDialog.Text(context, PromptDate, $"Puts, data inválida digite novamente (no formato dd/mm/yyyy) {EmojiType.Speechless}");
             }
